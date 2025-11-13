@@ -55,6 +55,14 @@ class MainActivity : ComponentActivity() {
 }
 
 data class Message(val author: String, val body: String)/*This is gonna be used in the function below to display the author's name and text*/
+/*The reason that the variables in Message are constant(val) is so that every time a new message is created, a new object is created. So even if it is the same author, this is how it will look:
+Message("Gloria", "Hello")
+Message("Gloria", "How are you?")
+Message("Gloria", "I’ll be late")
+Compose prefers this so that it can be able to keep track of the changes. If we made the body a var, if Gloria
+texted "How are you?" after "Hello", now in our memory, we'd only have "How are you?", the "Hello" would be lost.
+We want to keep track of everything so that's why the variables are constant.
+So plz note that in the function MesssageCard, everytime a new message is typed, a new object is created*/
 
 /*Below, we put @Composable before the function to tell the compiler that the function I'm about to create should be treated as
 a Jetpack compose function. Characteristics of a Jetpack compose function include:
