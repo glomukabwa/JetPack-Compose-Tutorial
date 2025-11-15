@@ -86,15 +86,30 @@ fun MessageCard(msg: Message){/*So this function accepts an object of the type M
         Spacer(modifier = Modifier.width(8.dp))//Add horizontal space between the profile and the message
 
         // We keep track if the message is expanded or not in this variable
-        var isExpanded by remember { mutableStateOf(false) }/*We are creating a variable to track if a message has been
-        clicked or not. remember is used to store the state of the variable in memory while mutableStateOf(false) is used to keep
-        track of the change of the variable cz u'll see that it'll keep changing*/
+        var isExpanded by remember { mutableStateOf(false) }
+        /*This line creates state inside your composable. What is “state” in Compose? A state is data that, when it changes, causes the
+        UI to automatically recompose (redraw).
+        mutableStateOf(false) -> This creates an observable mutable state whose initial value is false.
+        Think of it like: A box that stores a value, Compose watches this box. When the value changes → UI automatically updates
+        remember { ... } -> This makes Compose keep the value across recompositions. Without remember, every time Compose redraws the
+        UI, isExpanded would reset to false.Example: If the user clicks the message and expands it, isExpanded becomes true,  UI
+        recomposes. Without remember, the value would go back to false. You would never see it expand
+        var isExpanded by ... -> The by is Kotlin’s property delegation, which lets you treat the state like a normal variable.Instead
+         of writing:isExpanded.value = true , You can simply write: isExpanded = true. This makes the state easier to use.*/
 
-        val surfaceColor by animateColorAsState(// surfaceColor will be updated gradually from one color to the other
+        val surfaceColor by animateColorAsState(
             if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-        )
+        )/*What does animateColorAsState() do? Normally, if you change a color from: Color.White → Color.Blue, the color switches
+         instantly. But with: animateColorAsState(), Compose will animate the transition gradually:
+         white → light blue → medium blue → dark blue → final blue. This makes the UI smoother.
+         The input to animateColorAsState depends on isExpanded. So: When isExpanded == false → color is surface(meaning it retains the
+         current surface colors) and when isExpanded == true → color becomes primary. Because it’s animated, it does not jump instantly,
+         it transitions smoothly from one color to the other.
+         So we can say simply that animateColorAsState receives an input which is the value of isExpanded then applies the if..else..
+         statement then gets an output and that output is stored by the variable surfaceColor*/
 
-        Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) /*This means that if the value was true, it becomes false and if false, it becomes true. It's used to trace if it has been clicked or not*/{
+        Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) /*This means that if the value was true, it becomes false and
+         if false, it becomes true. It's used to trace if it has been clicked or not*/{
             Text(
                 text = msg.author,
                 color = MaterialTheme.colorScheme.secondary, //Check the actual color that secondary is in Theme.kt
@@ -133,6 +148,7 @@ run the app to see the UI*/
     showBackground = true,//We have to actively show the background of dark mode or it will default to false and become transparent so there will be no background(since my Android Studio is in dark mode, might not notice the difference without this but it is there)
     name = "Dark Mode"//The name of the 2nd preview
 )
+
 @Composable
 fun PreviewMessage(){
     JetpackComposeClassTaskTheme {/*This makes it apply the themes in Theme.kt. U'll notice that before it was there, the preview had no color. Now it has a white background if it is light-mode(default) or a dark background if dark-mode is activated*/
@@ -144,21 +160,32 @@ fun PreviewMessage(){
 
 @Composable
 fun Conversation(messages: List<Message>){
+    /*You'll notice that in the brackets of the function we haven't written val messages, we've just written it on its own. So
+    apparently, for function parameters you don't usually put var or val. This is because function parameters can't change what they
+    are referring to. For example, if our parameter was messages: String, inside the function we can't change that parameter, we can't
+    reassign it, we can only use it so it is behaving like a val. You can't do anything to a val once it is declared. Kotlin therefore
+    doesn't make you write that its a val cz that's redundant. You also can't write var cz that would be wrong. It doesn't behave like
+    a var.
+    Within the brackets of List, we are usually supposed to put the type of List it is. It could be a string, int , object etc.
+    In this case, it's an object of the data class Message that we created before so we specify it here.*/
     LazyColumn {
+        /*A LazyColumn is like a vertical RecyclerView. A RecyclerView is designed to load and display only the items that are currently
+         visible on the screen, plus a few extra that are just off-screen to prepare for smooth scrolling. When an item scrolls
+         off-screen, its ViewHolder is reused for the next item coming into view.*/
         items(messages) { message ->
             MessageCard(message)
-        }
+        }/*What this part of the code does is that it says that for each message in messages, call MessageCard(message). So call
+        MessageCard and MessageCard usually needs an argument that is the message being passed so pass one message from the list
+        we have. Then it also tells LazyColumn, display the output of MessageCard and LazyColumn does it in a vertical RecyclerView*/
     }
-    /*So this is what is happening in the function above, we are passing a list as a parameter. Check the list in SampleData.kt
-    * Then we are saying that for every item in that list, apply the function MessageCard to it. We are doing this to ensure that
-    * it applies the GUI formatting we have done in message card. Look at the preview in the preview page */
 }
 
 @Preview
 @Composable
 fun previewConversation(){
     JetpackComposeClassTaskTheme {
-        Surface {//I don't  need to put fillMaxSize() here cz the messages are so many so they will definitely surpass the screen. With the other one, I had to do that or it would only be the size of one message
+        Surface {/*I don't  need to put fillMaxSize() here cz the messages are so many so they will definitely surpass the screen size.
+         With the other one, I had to do that or it would only be the size of one message*/
             Conversation(SampleData.conversationSample)
         }
     }
